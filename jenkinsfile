@@ -1,0 +1,23 @@
+pipeline {
+    agent any
+     stages {
+             stage('Build') {
+                  steps {
+             sh 'printenv'
+              sh 'docker build -t demo-ecr-img'
+       	   
+       }
+     }  
+     stage ('Publish ECR') {
+       steps {
+         withEnv (["AWS_ACCESS_KEY_ID=${env.AWS_ACCESS_KEY_ID}","AWS_SECRET_ACCESS_KEY=${env.AWS_SECRET_ACCESS_KEY}","AWS_DEFAULT_REGION=${env.AWS_DEFAULT_REGION}"]) {
+          sh 'docker login -u AWS -p $( aws ecr-public get-login-password --region us-east-1) public.ecr.aws/u7r1a0b3'
+          sh 'docker build -t demo-ecr-img .'
+          sh 'docker tag demo-ecr-img:""$BUILD-ID""'
+          sh 'docker push public.ecr.aws/ u7r1a0b3/demo-ecr-img:""$BUILD-ID""'
+        }		 
+      }
+    }
+  }
+}
+
